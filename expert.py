@@ -1,7 +1,16 @@
 from pyswip import Prolog
+import os
 
 class RestaurantExpert:
     def __init__(self):
+        self.prolog = Prolog()
+        
+        # Get the directory where this script is located
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        places_path = os.path.join(script_dir, "places.pl")
+        
+        # Consult the knowledge base
+        self.prolog.consult(places_path)
         self.prolog = Prolog()
         self.prolog.consult("places.pl") # knowledge base
         self.remaining = self.get_all_places() # this will shrink as we ask questions
