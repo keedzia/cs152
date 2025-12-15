@@ -85,3 +85,43 @@ get_meal_types(Places, Meals) :-
 get_types(Places, Types) :-
     findall(T, (member(P, Places), restaurant(P, T, _, _, _, _, _, _, _, _, _)), AllTypes),
     list_to_set(AllTypes, Types).
+
+get_budgets(Places, Budgets) :-
+    findall(B, (member(P, Places), restaurant(P, _, _, B, _, _, _, _, _, _, _)), AllBudgets),
+    list_to_set(AllBudgets, Budgets).
+
+get_max_distance(Places, MaxDist) :-
+    findall(D, (member(P, Places), restaurant(P, _, _, _, D, _, _, _, _, _, _)), Dists),
+    max_list(Dists, MaxDist).
+
+get_min_distance(Places, MinDist) :-
+    findall(D, (member(P, Places), restaurant(P, _, _, _, D, _, _, _, _, _, _)), Dists),
+    min_list(Dists, MinDist).
+
+has_wifi_available(Places) :-
+    member(P, Places),
+    restaurant(P, _, _, _, _, _, _, _, _, yes, _), !.
+
+has_no_wifi_available(Places) :-
+    member(P, Places),
+    restaurant(P, _, _, _, _, _, _, _, _, no, _), !.
+
+has_reservations_available(Places) :-
+    member(P, Places),
+    restaurant(P, _, _, _, _, _, _, yes, _, _, _), !.
+
+has_no_reservations_available(Places) :-
+    member(P, Places),
+    restaurant(P, _, _, _, _, _, _, no, _, _, _), !.
+
+get_max_group_size(Places, MaxSize) :-
+    findall(S, (member(P, Places), restaurant(P, _, _, _, _, _, _, _, S, _, _)), Sizes),
+    max_list(Sizes, MaxSize).
+
+get_min_group_size(Places, MinSize) :-
+    findall(S, (member(P, Places), restaurant(P, _, _, _, _, _, _, _, S, _, _)), Sizes),
+    min_list(Sizes, MinSize).
+
+get_dietary_options(Places, Options) :-
+    findall(O, (member(P, Places), restaurant(P, _, _, _, _, _, _, _, _, _, Opts), member(O, Opts)), AllOptions),
+    list_to_set(AllOptions, Options).
