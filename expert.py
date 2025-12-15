@@ -9,9 +9,7 @@ class RestaurantExpert:
         places_path = os.path.join(script_dir, "places.pl")
         
         self.prolog.consult(places_path)
-        self.prolog = Prolog()
-        self.prolog.consult("places.pl") # knowledge base
-        self.remaining = self.get_all_places() # this will shrink as we ask questions
+        self.remaining = self.get_all_places()
         
     def get_all_places(self):
         query = "restaurant(Name, _, _, _, _, _, _, _, _, _, _)"
@@ -20,7 +18,6 @@ class RestaurantExpert:
     
     # FILTERING FUNCTIONS (ASKABLES)
     def filter_by_type(self, place_type):
-        # restaurant or bar
         filtered = []
         for place in self.remaining:
             query = f"matches_type('{place}', {place_type})"
@@ -29,7 +26,6 @@ class RestaurantExpert:
         self.remaining = filtered
         
     def filter_by_budget(self, budget):
-        # cheap, medium, expensive
         filtered = []
         for place in self.remaining:
             query = f"matches_budget('{place}', {budget})"
@@ -38,7 +34,6 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_distance(self, max_dist):
-        # distance in kilometers
         filtered = []
         for place in self.remaining:
             query = f"matches_distance('{place}', {max_dist})"
@@ -47,7 +42,6 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_meal(self, meal_type):
-        # breakfast, lunch, dinner, snack
         filtered = []
         for place in self.remaining:
             query = f"matches_meal('{place}', {meal_type})"
@@ -56,17 +50,14 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_cuisine(self, cuisine):
-        # indian, chinese, mexican, american, italian, etc.
         filtered = []
         for place in self.remaining:
-            # handle cuisines with spaces
             query = f"matches_cuisine('{place}', {cuisine})"
             if list(self.prolog.query(query)):
                 filtered.append(place)
         self.remaining = filtered
     
     def filter_by_vibe(self, vibe):
-        # casual, upscale etc.
         filtered = []
         for place in self.remaining:
             query = f"matches_vibe('{place}', {vibe})"
@@ -75,7 +66,6 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_reservations(self, needs_res):
-        # yes or no
         filtered = []
         for place in self.remaining:
             query = f"matches_reservations('{place}', {needs_res})"
@@ -84,7 +74,6 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_group_size(self, size):
-        # solo, small group (2-5), large group (6+)
         filtered = []
         for place in self.remaining:
             query = f"matches_group_size('{place}', {size})"
@@ -93,7 +82,6 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_wifi(self, needs_wifi):
-        # yes or no (doesn't matter is handled by not filtering)
         filtered = []
         for place in self.remaining:
             query = f"matches_wifi('{place}', {needs_wifi})"
@@ -102,7 +90,6 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_dietary(self, dietary):
-        # any, vegetarian, vegan, gluten_free, halal
         filtered = []
         for place in self.remaining:
             query = f"matches_dietary('{place}', {dietary})"
@@ -110,20 +97,26 @@ class RestaurantExpert:
                 filtered.append(place)
         self.remaining = filtered
     
-    # METHODS TO GET AVAILABLE OPTIONS, so the question options are adapted to remaining places
+    # METHODS TO GET AVAILABLE OPTIONS
     def get_available_cuisines(self):
-        # return list of cuisines in remaining places
         if not self.remaining:
             return []
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
         query = f"get_cuisines({places_str}, Cuisines)"
         results = list(self.prolog.query(query))
         if results:
-            return results[0]['Cuisines']
+            cuisines = results[0]['Cuisines']
+            # remove duplicates while preserving order
+            seen = set()
+            unique_cuisines = []
+            for c in cuisines:
+                if c not in seen:
+                    seen.add(c)
+                    unique_cuisines.append(c)
+            return unique_cuisines
         return []
     
     def get_available_vibes(self):
-        # return list of vibes in remaining places
         if not self.remaining:
             return []
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -134,7 +127,6 @@ class RestaurantExpert:
         return []
     
     def get_available_meals(self):
-        # return list of meal types in remaining places
         if not self.remaining:
             return []
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -145,7 +137,6 @@ class RestaurantExpert:
         return []
     
     def get_available_types(self):
-        # return list of place types in remaining places
         if not self.remaining:
             return []
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -156,7 +147,6 @@ class RestaurantExpert:
         return []
     
     def get_available_budgets(self):
-        # return list of budgets in remaining places
         if not self.remaining:
             return []
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -167,7 +157,6 @@ class RestaurantExpert:
         return []
     
     def get_distance_range(self):
-        # get min and max distance from remaining places
         if not self.remaining:
             return None, None
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -183,7 +172,6 @@ class RestaurantExpert:
         return min_dist, max_dist
     
     def check_wifi_options(self):
-        # returns tuple (has_wifi, has_no_wifi)
         if not self.remaining:
             return False, False
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -194,7 +182,6 @@ class RestaurantExpert:
         return has_wifi, has_no_wifi
     
     def check_reservation_options(self):
-        # returns tuple (has_reservations, has_no_reservations)
         if not self.remaining:
             return False, False
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -205,7 +192,6 @@ class RestaurantExpert:
         return has_res, has_no_res
     
     def get_group_size_range(self):
-        # returns (min_size, max_size)
         if not self.remaining:
             return None, None
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -221,7 +207,6 @@ class RestaurantExpert:
         return min_size, max_size
     
     def get_available_dietary(self):
-        # return list of dietary options in remaining places
         if not self.remaining:
             return []
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -233,7 +218,6 @@ class RestaurantExpert:
 
 
 def ask_multiple_choice(prompt, options):
-    # display prompt and options, not showing unavailable irrelevant choices for the askable
     print(f"\n{prompt}")
     for i, opt in enumerate(options, 1):
         print(f"  {i}. {opt}")
@@ -250,16 +234,13 @@ def ask_multiple_choice(prompt, options):
 
 
 def run_expert_system():
-   
     print("=== restaurant recommendation system ===")
     print("finding the perfect place near esmeralda 920...\n")
     
     expert = RestaurantExpert()
-
-    # ask each question once in order
     print(f"\ncurrent matches: {len(expert.remaining)}")
     
-    # ask type first if multiple types available
+    # Q1: type
     if len(expert.remaining) > 1:
         available_types = expert.get_available_types()
         if len(available_types) > 1:
@@ -273,11 +254,9 @@ def run_expert_system():
                 show_results(expert)
                 return
     
-    # ask about wifi - smart handling
+    # Q2: wifi (SECOND QUESTION)
     if len(expert.remaining) > 1:
         has_wifi, has_no_wifi = expert.check_wifi_options()
-        
-        # only ask if there's a mix
         if has_wifi and has_no_wifi:
             wifi = ask_multiple_choice(
                 "is wifi important for you?",
@@ -290,7 +269,7 @@ def run_expert_system():
                     show_results(expert)
                     return
     
-    # ask about meal type
+    # Q3: meal
     if len(expert.remaining) > 1:
         available_meals = expert.get_available_meals()
         if len(available_meals) > 1:
@@ -304,7 +283,7 @@ def run_expert_system():
                 show_results(expert)
                 return
     
-    # ask about cuisine if multiple available
+    # Q4: cuisine
     if len(expert.remaining) > 1:
         available_cuisines = expert.get_available_cuisines()
         if len(available_cuisines) > 1:
@@ -318,7 +297,7 @@ def run_expert_system():
                 show_results(expert)
                 return
     
-    # ask about budget - only show available budgets
+    # Q5: budget
     if len(expert.remaining) > 1:
         available_budgets = expert.get_available_budgets()
         if len(available_budgets) > 1:
@@ -332,11 +311,10 @@ def run_expert_system():
                 show_results(expert)
                 return
     
-    # ask about distance - smart based on what's available
+    # Q6: distance
     if len(expert.remaining) > 1:
         min_dist, max_dist = expert.get_distance_range()
         
-        # build options based on what's available
         options = []
         distance_map = {}
         
@@ -354,7 +332,7 @@ def run_expert_system():
                 distance_map['medium (2-5km)'] = 5
                 options.append('long (>5km)')
                 distance_map['long (>5km)'] = 100
-        else:  # all places are > 2km
+        else:
             if max_dist <= 5:
                 options.append('medium (2-5km)')
                 distance_map['medium (2-5km)'] = 5
@@ -375,7 +353,7 @@ def run_expert_system():
                 show_results(expert)
                 return
     
-    # ask about vibe if multiple available
+    # Q7: vibe
     if len(expert.remaining) > 1:
         available_vibes = expert.get_available_vibes()
         if len(available_vibes) > 1:
@@ -389,11 +367,9 @@ def run_expert_system():
                 show_results(expert)
                 return
     
-    # ask about reservations - smart handling
+    # Q8: reservations
     if len(expert.remaining) > 1:
         has_res, has_no_res = expert.check_reservation_options()
-        
-        # only ask if there's a mix
         if has_res and has_no_res:
             reservations = ask_multiple_choice(
                 "do you need to make reservations?",
@@ -406,11 +382,10 @@ def run_expert_system():
                     show_results(expert)
                     return
     
-    # ask about group size - smart based on ranges
+    # Q9: group size
     if len(expert.remaining) > 1:
         min_size, max_size = expert.get_group_size_range()
         
-        # build options based on what's available
         options = []
         size_map = {}
         
@@ -435,11 +410,10 @@ def run_expert_system():
                 show_results(expert)
                 return
     
-    # ask about dietary restrictions - only show available options
+    # Q10: dietary
     if len(expert.remaining) > 1:
         available_dietary = expert.get_available_dietary()
         if available_dietary:
-            # always include "any" option
             options = ['any'] + available_dietary
             dietary = ask_multiple_choice(
                 "any dietary restrictions?",
@@ -451,12 +425,10 @@ def run_expert_system():
                 show_results(expert)
                 return
     
-    # if we get here, show whatever is remaining
     show_results(expert)
 
 
 def show_results(expert):
-    # show final results
     print("\n" + "="*40)
     if len(expert.remaining) == 0:
         print("sorry, no places match your criteria :(")
