@@ -3,18 +3,17 @@ from pyswip import Prolog
 class RestaurantExpert:
     def __init__(self):
         self.prolog = Prolog()
-        self.prolog.consult("restaurants.pl")
-        # start with all places
-        self.remaining = self.get_all_places()
+        self.prolog.consult("restaurants.pl") # knowledge base
+        self.remaining = self.get_all_places() # this will shrink as we ask questions
         
     def get_all_places(self):
-        """get all restaurant and bar names from knowledge base"""
         query = "restaurant(Name, _, _, _, _, _, _, _, _, _, _)"
         results = list(self.prolog.query(query))
         return [r['Name'] for r in results]
     
+    # FILTERING FUNCTIONS (ASKABLES)
     def filter_by_type(self, place_type):
-        """filter remaining places by type (restaurant or bar)"""
+        # restaurant or bar
         filtered = []
         for place in self.remaining:
             query = f"matches_type('{place}', {place_type})"
@@ -23,7 +22,7 @@ class RestaurantExpert:
         self.remaining = filtered
         
     def filter_by_budget(self, budget):
-        """filter by budget compatibility"""
+        # below 10 - low, 10-30 medium, above 30 expensive
         filtered = []
         for place in self.remaining:
             query = f"matches_budget('{place}', {budget})"
@@ -32,7 +31,7 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_distance(self, max_dist):
-        """filter by max distance in blocks"""
+        # distance in kilometers
         filtered = []
         for place in self.remaining:
             query = f"matches_distance('{place}', {max_dist})"
@@ -41,7 +40,7 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_meal(self, meal_type):
-        """filter by meal type"""
+        # breakfast, lunch, dinner, snack
         filtered = []
         for place in self.remaining:
             query = f"matches_meal('{place}', {meal_type})"
@@ -50,7 +49,7 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_cuisine(self, cuisine):
-        """filter by cuisine type"""
+        # indian, chinese, mexican, american, italian, etc.
         filtered = []
         for place in self.remaining:
             # handle cuisines with spaces
@@ -63,7 +62,7 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_vibe(self, vibe):
-        """filter by vibe/atmosphere"""
+        # casual, formal, trendy, family_friendly, romantic, etc.
         filtered = []
         for place in self.remaining:
             query = f"matches_vibe('{place}', {vibe})"
@@ -72,7 +71,7 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_reservations(self, needs_res):
-        """filter by reservation requirements"""
+        # yes or no
         filtered = []
         for place in self.remaining:
             query = f"matches_reservations('{place}', {needs_res})"
@@ -81,7 +80,7 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_group_size(self, size):
-        """filter by group size capacity"""
+        # solo, small group (2-5), large group (6+)
         filtered = []
         for place in self.remaining:
             query = f"matches_group_size('{place}', {size})"
@@ -90,7 +89,7 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_wifi(self, needs_wifi):
-        """filter by wifi availability"""
+        # yes or no
         filtered = []
         for place in self.remaining:
             query = f"matches_wifi('{place}', {needs_wifi})"
@@ -99,7 +98,7 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def filter_by_dietary(self, dietary):
-        """filter by dietary restrictions"""
+        # any, vegetarian, vegan, gluten_free, halal
         filtered = []
         for place in self.remaining:
             query = f"matches_dietary('{place}', {dietary})"
@@ -108,7 +107,7 @@ class RestaurantExpert:
         self.remaining = filtered
     
     def get_available_cuisines(self):
-        """get cuisines available in remaining places"""
+        # return list of cuisines in remaining places
         if not self.remaining:
             return []
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -119,7 +118,7 @@ class RestaurantExpert:
         return []
     
     def get_available_vibes(self):
-        """get vibes available in remaining places"""
+        # return list of vibes in remaining places
         if not self.remaining:
             return []
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -130,7 +129,7 @@ class RestaurantExpert:
         return []
     
     def get_available_meals(self):
-        """get meal types available in remaining places"""
+        # return list of meal types in remaining places
         if not self.remaining:
             return []
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -141,7 +140,7 @@ class RestaurantExpert:
         return []
     
     def get_available_types(self):
-        """get types (restaurant/bar) available in remaining places"""
+        # return list of place types in remaining places
         if not self.remaining:
             return []
         places_str = '[' + ','.join([f"'{p}'" for p in self.remaining]) + ']'
@@ -153,7 +152,7 @@ class RestaurantExpert:
 
 
 def ask_multiple_choice(prompt, options):
-    """helper to ask multiple choice questions"""
+    # display prompt and options, not showing unavailable irrelevant choices for the askable
     print(f"\n{prompt}")
     for i, opt in enumerate(options, 1):
         print(f"  {i}. {opt}")
@@ -170,13 +169,13 @@ def ask_multiple_choice(prompt, options):
 
 
 def run_expert_system():
-    """main function to run the recommendation system"""
+   
     print("=== restaurant recommendation system ===")
     print("finding the perfect place near esmeralda 920...\n")
     
     expert = RestaurantExpert()
     
-    # keep asking questions until we narrow it down
+    # main loop
     while len(expert.remaining) > 1:
         print(f"\ncurrent matches: {len(expert.remaining)}")
         
