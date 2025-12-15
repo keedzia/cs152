@@ -3,17 +3,26 @@
 % restaurant(name, type, cuisine, budget, distance_blocks, meal_types, vibe, takes_reservations, max_group_size, has_wifi, dietary_options)
 
 % restaurants
-restaurant('la mezquita', restaurant, 'comida arabe', cheap, 3, [breakfast, lunch, dinner], casual, no, 8, yes, [vegetarian, vegan]).
-restaurant('taco express', restaurant, mexican, cheap, 2, [lunch, dinner, snack], casual, no, 6, no, [vegetarian]).
-restaurant('el griego', restaurant, greek, medium, 5, [breakfast, brunch, lunch, dinner], relaxed, yes, 12, yes, [vegetarian, vegan, gluten_free]).
-restaurant('istanbul cafe', restaurant, turkish, medium, 4, [breakfast, brunch, lunch], cozy, no, 10, yes, [vegetarian, halal]).
-restaurant('pasta palazzo', restaurant, italian, expensive, 7, [lunch, dinner], upscale, yes, 20, yes, [vegetarian, gluten_free]).
-restaurant('sushi spot', restaurant, japanese, expensive, 6, [lunch, dinner], modern, yes, 8, yes, [gluten_free]).
+restaurant('santos_manjares', restaurant, parrilla, medium, walking, [lunch, dinner], casual, no, 40, yes, [vegetarian]).
+restaurant('empas_world', restaurant, international, cheap, walking, [breakfast, lunch, dinner, snack], casual, no, 15, yes, [vegetarian, vegan]).
+restaurant('surry_hills', restaurant, international, expensive, short_ride, [brunch, lunch, dinner], upscale, yes, 25, yes, [vegetarian, vegan, gluten_free]).
+restaurant('parrilla_cero5', restaurant, parrilla, expensive, short_ride, [lunch, dinner], upscale, yes, 50, no, [vegetarian, gluten_free]).
+restaurant('warren_cafe_brunch', restaurant, cafe, medium, walking, [breakfast, brunch, lunch, snack], study_friendly, no, 20, yes, [vegetarian, vegan, gluten_free]).
+restaurant('sheikobs_bagels', restaurant, cafe, cheap, short_ride, [breakfast, brunch, lunch, snack], casual, no, 15, yes, [vegetarian, vegan]).
+restaurant('la_reverde_parrillita_vegana', restaurant, vegan, medium, walking, [lunch, dinner], casual, no, 25, no, [vegan, vegetarian, gluten_free]).
+restaurant('relicioso_comida_vegana', restaurant, vegan, medium, walking, [lunch, dinner, snack], casual, no, 20, yes, [vegan, vegetarian, gluten_free]).
+restaurant('la_meca_shawarma', restaurant, 'comida_arabe', cheap, walking, [lunch, dinner, snack], casual, no, 30, no, [vegetarian, halal]).
+restaurant('rifi_restaurante', restaurant, 'comida_arabe', medium, short_ride, [lunch, dinner], casual, no, 35, no, [vegetarian, vegan, halal]).
+restaurant('sazon_mexica', restaurant, mexican, medium, walking, [lunch, dinner], casual, no, 25, no, [vegetarian, vegan]).
+restaurant('la_despensa_de_graziano', restaurant, international, medium, short_ride, [lunch, dinner], casual, no, 40, yes, [vegetarian, gluten_free]).
+
 
 % bars
-restaurant('cerveza y mas', bar, mexican, cheap, 3, [snack, dinner], lively, no, 15, no, [vegetarian]).
-restaurant('wine corner', bar, international, expensive, 8, [snack], sophisticated, yes, 10, yes, [vegetarian, vegan, gluten_free]).
-restaurant('local pub', bar, american, medium, 2, [lunch, dinner, snack], casual, no, 20, yes, [vegetarian]).
+restaurant('alvear_roof_bar', bar, international, expensive, short_ride, [snack, dinner], upscale, yes, 20, yes, [vegetarian, vegan, gluten_free]).
+restaurant('on_tap_retiro', bar, international, medium, walking, [lunch, dinner, snack], social, no, 30, yes, [vegetarian]).
+restaurant('backroom_bar', bar, international, cheap, walking, [dinner, snack], casual, no, 25, no, [vegetarian]).
+restaurant('avant_garten', bar, international, medium, short_ride, [lunch, dinner, snack], social, no, 40, yes, [vegetarian, vegan]).
+restaurant('the_little_bar_canitas', bar, international, cheap, far, [dinner, snack], casual, no, 20, no, [vegetarian]).
 
 % helper predicates
 matches_budget(Place, Budget) :-
