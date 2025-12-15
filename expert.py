@@ -3,7 +3,7 @@ from pyswip import Prolog
 class RestaurantExpert:
     def __init__(self):
         self.prolog = Prolog()
-        self.prolog.consult("restaurants.pl") # knowledge base
+        self.prolog.consult("places.pl") # knowledge base
         self.remaining = self.get_all_places() # this will shrink as we ask questions
         
     def get_all_places(self):
@@ -174,7 +174,7 @@ def run_expert_system():
     print("finding the perfect place near esmeralda 920...\n")
     
     expert = RestaurantExpert()
-    
+
     # main loop
     while len(expert.remaining) > 1:
         print(f"\ncurrent matches: {len(expert.remaining)}")
