@@ -53,16 +53,13 @@ class RestaurantExpert:
         filtered = []
         for place in self.remaining:
             # handle cuisines with spaces
-            if ' ' in cuisine:
-                query = f"matches_cuisine('{place}', '{cuisine}')"
-            else:
-                query = f"matches_cuisine('{place}', {cuisine})"
+            query = f"matches_cuisine('{place}', {cuisine})"
             if list(self.prolog.query(query)):
                 filtered.append(place)
         self.remaining = filtered
     
     def filter_by_vibe(self, vibe):
-        # casual, formal, trendy, family_friendly, romantic, etc.
+        # casual, upscale etc.
         filtered = []
         for place in self.remaining:
             query = f"matches_vibe('{place}', {vibe})"
@@ -106,7 +103,7 @@ class RestaurantExpert:
                 filtered.append(place)
         self.remaining = filtered
     
-    # METHODS TO GET AVAILABLE OPTIONS
+    # METHODS TO GET AVAILABLE OPTIONS, so the question options are adapted to remaining places
     def get_available_cuisines(self):
         # return list of cuisines in remaining places
         if not self.remaining:
@@ -252,11 +249,11 @@ def run_expert_system():
     
     expert = RestaurantExpert()
 
-    # main loop
-    while len(expert.remaining) > 1:
-        print(f"\ncurrent matches: {len(expert.remaining)}")
-        
-        # ask type first if multiple types available
+    # ask each question once in order
+    print(f"\ncurrent matches: {len(expert.remaining)}")
+    
+    # ask type first if multiple types available
+    if len(expert.remaining) > 1:
         available_types = expert.get_available_types()
         if len(available_types) > 1:
             place_type = ask_multiple_choice(
@@ -264,10 +261,30 @@ def run_expert_system():
                 available_types
             )
             expert.filter_by_type(place_type)
+            print(f"current matches: {len(expert.remaining)}")
             if len(expert.remaining) <= 1:
-                break
+                show_results(expert)
+                return
+    
+    # ask about wifi - smart handling
+    if len(expert.remaining) > 1:
+        has_wifi, has_no_wifi = expert.check_wifi_options()
         
-        # ask about meal type
+        # only ask if there's a mix
+        if has_wifi and has_no_wifi:
+            wifi = ask_multiple_choice(
+                "is wifi important for you?",
+                ['yes', "doesn't matter"]
+            )
+            if wifi == 'yes':
+                expert.filter_by_wifi('yes')
+                print(f"current matches: {len(expert.remaining)}")
+                if len(expert.remaining) <= 1:
+                    show_results(expert)
+                    return
+    
+    # ask about meal type
+    if len(expert.remaining) > 1:
         available_meals = expert.get_available_meals()
         if len(available_meals) > 1:
             meal = ask_multiple_choice(
@@ -275,10 +292,13 @@ def run_expert_system():
                 available_meals
             )
             expert.filter_by_meal(meal)
+            print(f"current matches: {len(expert.remaining)}")
             if len(expert.remaining) <= 1:
-                break
-        
-        # ask about cuisine if multiple available
+                show_results(expert)
+                return
+    
+    # ask about cuisine if multiple available
+    if len(expert.remaining) > 1:
         available_cuisines = expert.get_available_cuisines()
         if len(available_cuisines) > 1:
             cuisine = ask_multiple_choice(
@@ -286,63 +306,70 @@ def run_expert_system():
                 available_cuisines
             )
             expert.filter_by_cuisine(cuisine)
+            print(f"current matches: {len(expert.remaining)}")
             if len(expert.remaining) <= 1:
-                break
+                show_results(expert)
+                return
+    
+    # ask about budget - only show available budgets
+    if len(expert.remaining) > 1:
+        available_budgets = expert.get_available_budgets()
+        if len(available_budgets) > 1:
+            budget = ask_multiple_choice(
+                "what's your budget?",
+                available_budgets
+            )
+            expert.filter_by_budget(budget)
+            print(f"current matches: {len(expert.remaining)}")
+            if len(expert.remaining) <= 1:
+                show_results(expert)
+                return
+    
+    # ask about distance - smart based on what's available
+    if len(expert.remaining) > 1:
+        min_dist, max_dist = expert.get_distance_range()
         
-        # ask about budget - only show available budgets
-        if len(expert.remaining) > 1:
-            available_budgets = expert.get_available_budgets()
-            if len(available_budgets) > 1:
-                budget = ask_multiple_choice(
-                    "what's your budget?",
-                    available_budgets
-                )
-                expert.filter_by_budget(budget)
-                if len(expert.remaining) <= 1:
-                    break
+        # build options based on what's available
+        options = []
+        distance_map = {}
         
-        # ask about distance - smart based on what's available
-        if len(expert.remaining) > 1:
-            min_dist, max_dist = expert.get_distance_range()
-            
-            # build options based on what's available
-            options = []
-            distance_map = {}
-            
-            if max_dist <= 2:
-                options.append('short (0-2km)')
-                distance_map['short (0-2km)'] = 2
-            elif min_dist <= 2:
-                options.append('short (0-2km)')
-                distance_map['short (0-2km)'] = 2
-                if max_dist <= 5:
-                    options.append('medium (2-5km)')
-                    distance_map['medium (2-5km)'] = 5
-                else:
-                    options.append('medium (2-5km)')
-                    distance_map['medium (2-5km)'] = 5
-                    options.append('long (>5km)')
-                    distance_map['long (>5km)'] = 100
-            else:  # all places are > 2km
-                if max_dist <= 5:
-                    options.append('medium (2-5km)')
-                    distance_map['medium (2-5km)'] = 5
-                else:
-                    options.append('medium (2-5km)')
-                    distance_map['medium (2-5km)'] = 5
-                    options.append('long (>5km)')
-                    distance_map['long (>5km)'] = 100
-            
-            if len(options) > 1:
-                distance = ask_multiple_choice(
-                    "max distance from esmeralda 920?",
-                    options
-                )
-                expert.filter_by_distance(distance_map[distance])
-                if len(expert.remaining) <= 1:
-                    break
+        if max_dist <= 2:
+            options.append('short (0-2km)')
+            distance_map['short (0-2km)'] = 2
+        elif min_dist <= 2:
+            options.append('short (0-2km)')
+            distance_map['short (0-2km)'] = 2
+            if max_dist <= 5:
+                options.append('medium (2-5km)')
+                distance_map['medium (2-5km)'] = 5
+            else:
+                options.append('medium (2-5km)')
+                distance_map['medium (2-5km)'] = 5
+                options.append('long (>5km)')
+                distance_map['long (>5km)'] = 100
+        else:  # all places are > 2km
+            if max_dist <= 5:
+                options.append('medium (2-5km)')
+                distance_map['medium (2-5km)'] = 5
+            else:
+                options.append('medium (2-5km)')
+                distance_map['medium (2-5km)'] = 5
+                options.append('long (>5km)')
+                distance_map['long (>5km)'] = 100
         
-        # ask about vibe if multiple available
+        if len(options) > 1:
+            distance = ask_multiple_choice(
+                "max distance from esmeralda 920?",
+                options
+            )
+            expert.filter_by_distance(distance_map[distance])
+            print(f"current matches: {len(expert.remaining)}")
+            if len(expert.remaining) <= 1:
+                show_results(expert)
+                return
+    
+    # ask about vibe if multiple available
+    if len(expert.remaining) > 1:
         available_vibes = expert.get_available_vibes()
         if len(available_vibes) > 1:
             vibe = ask_multiple_choice(
@@ -350,90 +377,86 @@ def run_expert_system():
                 available_vibes
             )
             expert.filter_by_vibe(vibe)
+            print(f"current matches: {len(expert.remaining)}")
             if len(expert.remaining) <= 1:
-                break
-        
-        # ask about wifi - smart handling
-        if len(expert.remaining) > 1:
-            has_wifi, has_no_wifi = expert.check_wifi_options()
-            
-            # only ask if there's a mix
-            if has_wifi and has_no_wifi:
-                wifi = ask_multiple_choice(
-                    "is wifi important for you?",
-                    ['yes', "doesn't matter"]
-                )
-                if wifi == 'yes':
-                    expert.filter_by_wifi('yes')
-                # if "doesn't matter", don't filter
-                if len(expert.remaining) <= 1:
-                    break
-        
-        # ask about reservations - smart handling
-        if len(expert.remaining) > 1:
-            has_res, has_no_res = expert.check_reservation_options()
-            
-            # only ask if there's a mix
-            if has_res and has_no_res:
-                reservations = ask_multiple_choice(
-                    "do you need to make reservations?",
-                    ['yes', "doesn't matter"]
-                )
-                if reservations == 'yes':
-                    expert.filter_by_reservations('yes')
-                # if "doesn't matter", don't filter
-                if len(expert.remaining) <= 1:
-                    break
-        
-        # ask about group size - smart based on ranges
-        if len(expert.remaining) > 1:
-            min_size, max_size = expert.get_group_size_range()
-            
-            # build options based on what's available
-            options = []
-            size_map = {}
-            
-            if max_size >= 1:
-                options.append('solo')
-                size_map['solo'] = 1
-            if max_size >= 6:
-                options.append('small (2-6)')
-                size_map['small (2-6)'] = 6
-            if max_size >= 7:
-                options.append('big (7+)')
-                size_map['big (7+)'] = 7
-            
-            if len(options) > 1:
-                size = ask_multiple_choice(
-                    "how many people?",
-                    options
-                )
-                expert.filter_by_group_size(size_map[size])
-                if len(expert.remaining) <= 1:
-                    break
-        
-        # ask about dietary restrictions - only show available options
-        if len(expert.remaining) > 1:
-            available_dietary = expert.get_available_dietary()
-            if available_dietary:
-                # always include "any" option
-                options = ['any'] + available_dietary
-                dietary = ask_multiple_choice(
-                    "any dietary restrictions?",
-                    options
-                )
-                expert.filter_by_dietary(dietary)
-                if len(expert.remaining) <= 1:
-                    break
+                show_results(expert)
+                return
     
-    # show results
+    # ask about reservations - smart handling
+    if len(expert.remaining) > 1:
+        has_res, has_no_res = expert.check_reservation_options()
+        
+        # only ask if there's a mix
+        if has_res and has_no_res:
+            reservations = ask_multiple_choice(
+                "do you need to make reservations?",
+                ['yes', "doesn't matter"]
+            )
+            if reservations == 'yes':
+                expert.filter_by_reservations('yes')
+                print(f"current matches: {len(expert.remaining)}")
+                if len(expert.remaining) <= 1:
+                    show_results(expert)
+                    return
+    
+    # ask about group size - smart based on ranges
+    if len(expert.remaining) > 1:
+        min_size, max_size = expert.get_group_size_range()
+        
+        # build options based on what's available
+        options = []
+        size_map = {}
+        
+        if max_size >= 1:
+            options.append('solo')
+            size_map['solo'] = 1
+        if max_size >= 6:
+            options.append('small (2-6)')
+            size_map['small (2-6)'] = 6
+        if max_size >= 7:
+            options.append('big (7+)')
+            size_map['big (7+)'] = 7
+        
+        if len(options) > 1:
+            size = ask_multiple_choice(
+                "how many people?",
+                options
+            )
+            expert.filter_by_group_size(size_map[size])
+            print(f"current matches: {len(expert.remaining)}")
+            if len(expert.remaining) <= 1:
+                show_results(expert)
+                return
+    
+    # ask about dietary restrictions - only show available options
+    if len(expert.remaining) > 1:
+        available_dietary = expert.get_available_dietary()
+        if available_dietary:
+            # always include "any" option
+            options = ['any'] + available_dietary
+            dietary = ask_multiple_choice(
+                "any dietary restrictions?",
+                options
+            )
+            expert.filter_by_dietary(dietary)
+            print(f"current matches: {len(expert.remaining)}")
+            if len(expert.remaining) <= 1:
+                show_results(expert)
+                return
+    
+    # if we get here, show whatever is remaining
+    show_results(expert)
+
+
+def show_results(expert):
+    # show final results
     print("\n" + "="*40)
     if len(expert.remaining) == 0:
         print("sorry, no places match your criteria :(")
     elif len(expert.remaining) == 1:
         print(f"recommendation: {expert.remaining[0]}")
     else:
-        print("remaining options:")
+        print(f"here are your {len(expert.remaining)} options:")
         for place in expert.remaining:
             print(f"  - {place}")
 

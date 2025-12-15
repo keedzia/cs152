@@ -1,6 +1,6 @@
 % knowledge base for restaurants and bars near esmeralda 920
 
-% restaurant(name, type, cuisine, budget, distance_blocks, meal_types, vibe, takes_reservations, max_group_size, has_wifi, dietary_options)
+% restaurant(name, type, cuisine, budget, distance_kilometers, meal_types, vibe, takes_reservations, max_group_size, has_wifi, dietary_options)
 
 % restaurants
 restaurant('santos_manjares', restaurant, parrilla, medium, 0.2, [lunch, dinner], casual, no, 8, yes, [vegetarian]).
