@@ -14,12 +14,12 @@ class RestaurantExpertGUI:
         self.show_welcome_screen()
     
     def clear_window(self):
-        """Clear all widgets from the window"""
+        # clear all widgets from the window
         for widget in self.root.winfo_children():
             widget.destroy()
     
     def show_welcome_screen(self):
-        """Show the initial welcome screen"""
+        # show the initial welcome screen
         self.clear_window()
         
         frame = tk.Frame(self.root, bg="#fff5f7")
@@ -74,33 +74,33 @@ class RestaurantExpertGUI:
         start_btn.pack(pady=20)
     
     def start_questionnaire(self):
-        """Initialize the expert system and start asking questions"""
+        # initialize the expert system and start asking questions
         self.expert = RestaurantExpert()
         self.asked_questions = set()
         self.ask_next_question()
     
     def ask_next_question(self):
-        """Ask the next question - skip ones we've already asked"""
+        # ask the next question in the correct order
         if len(self.expert.remaining) <= 1:
             self.show_results()
             return
         
-        # list of all possible questions
+        # questions in the EXACT order from expert.py
         questions = [
-            ("type", "What type of place?", self.expert.get_available_types),
-            ("cuisine", "What cuisine?", self.expert.get_available_cuisines),
-            ("meal", "What meal?", self.expert.get_available_meals),
-            ("budget", "What's your budget?", self.expert.get_available_budgets),
-            ("vibe", "What vibe?", self.expert.get_available_vibes),
-            ("distance", "Max distance?", lambda: self._get_distance_options()),
-            ("wifi", "Is WiFi important?", self._get_wifi_options),
-            ("reservations", "Do you need reservations?", self._get_reservation_options),
-            ("group_size", "How many people?", lambda: self._get_group_size_options()),
-            ("dietary", "Any dietary restrictions?", self.expert.get_available_dietary),
+            ("type", "what type of place?", self.expert.get_available_types, None),
+            ("wifi", "is wifi important for you?", self._get_wifi_options, None),
+            ("meal", "what meal?", self.expert.get_available_meals, None),
+            ("cuisine", "what cuisine?", self.expert.get_available_cuisines, None),
+            ("budget", "what's your budget?", self.expert.get_available_budgets, None),
+            ("distance", "max distance from esmeralda 920?", lambda: self._get_distance_options(), None),
+            ("vibe", "what vibe are you looking for?", self.expert.get_available_vibes, None),
+            ("reservations", "do you need to make reservations?", self._get_reservation_options, None),
+            ("group_size", "how many people?", lambda: self._get_group_size_options(), None),
+            ("dietary", "any dietary restrictions?", self.expert.get_available_dietary, None),
         ]
         
         # find the next question that has variation
-        for q_type, q_text, q_func in questions:
+        for q_type, q_text, q_func, _ in questions:
             if q_type in self.asked_questions:
                 continue
             
@@ -108,7 +108,7 @@ class RestaurantExpertGUI:
             
             # handle special cases
             if q_type == "dietary" and options:
-                options = ["Any"] + options
+                options = ["any"] + options
             elif q_type == "wifi" or q_type == "reservations":
                 if not options:
                     continue
@@ -118,7 +118,7 @@ class RestaurantExpertGUI:
                 self.ask_multiple_choice(q_text, options, q_type)
                 return
             elif q_type == "wifi" or q_type == "reservations":
-                # These return tuples, handle specially
+                # these return tuples, handle specially
                 if options:
                     self.ask_multiple_choice(q_text, options, q_type)
                     return
@@ -127,7 +127,7 @@ class RestaurantExpertGUI:
         self.show_results()
     
     def _get_distance_options(self):
-        """Get distance options"""
+        # get distance options
         min_dist, max_dist = self.expert.get_distance_range()
         if not max_dist or (max_dist - (min_dist or 0)) < 0.1:
             return []
@@ -135,36 +135,48 @@ class RestaurantExpertGUI:
         options = []
         self.distance_map = {}
         
-        if max_dist and max_dist <= 2:
+        if max_dist <= 2:
             options.append('short (0-2km)')
             self.distance_map['short (0-2km)'] = 2
+        elif min_dist <= 2:
+            options.append('short (0-2km)')
+            self.distance_map['short (0-2km)'] = 2
+            if max_dist <= 5:
+                options.append('medium (2-5km)')
+                self.distance_map['medium (2-5km)'] = 5
+            else:
+                options.append('medium (2-5km)')
+                self.distance_map['medium (2-5km)'] = 5
+                options.append('long (>5km)')
+                self.distance_map['long (>5km)'] = 100
         else:
-            options.append('short (0-2km)')
-            self.distance_map['short (0-2km)'] = 2
-            options.append('medium (2-5km)')
-            self.distance_map['medium (2-5km)'] = 5
-            if max_dist and max_dist > 5:
+            if max_dist <= 5:
+                options.append('medium (2-5km)')
+                self.distance_map['medium (2-5km)'] = 5
+            else:
+                options.append('medium (2-5km)')
+                self.distance_map['medium (2-5km)'] = 5
                 options.append('long (>5km)')
                 self.distance_map['long (>5km)'] = 100
         
         return options if len(options) > 1 else []
     
     def _get_wifi_options(self):
-        """Get WiFi options"""
+        # get wifi options
         has_wifi, has_no_wifi = self.expert.check_wifi_options()
         if has_wifi and has_no_wifi:
-            return ['Yes', "Doesn't matter"]
+            return ['yes', "doesn't matter"]
         return []
     
     def _get_reservation_options(self):
-        """Get reservation options"""
+        # get reservation options
         has_res, has_no_res = self.expert.check_reservation_options()
         if has_res and has_no_res:
-            return ['Yes', "Doesn't matter"]
+            return ['yes', "doesn't matter"]
         return []
     
     def _get_group_size_options(self):
-        """Get group size options"""
+        # get group size options
         min_size, max_size = self.expert.get_group_size_range()
         if not max_size:
             return []
@@ -173,19 +185,19 @@ class RestaurantExpertGUI:
         self.size_map = {}
         
         if max_size >= 1:
-            options.append('Solo')
-            self.size_map['Solo'] = 1
+            options.append('solo')
+            self.size_map['solo'] = 1
         if max_size >= 6:
-            options.append('Small (2-6)')
-            self.size_map['Small (2-6)'] = 6
+            options.append('small (2-6)')
+            self.size_map['small (2-6)'] = 6
         if max_size >= 7:
-            options.append('Large (7+)')
-            self.size_map['Large (7+)'] = 7
+            options.append('big (7+)')
+            self.size_map['big (7+)'] = 7
         
         return options if len(options) > 1 else []
     
     def ask_multiple_choice(self, question, options, question_type):
-        """Display a multiple choice question"""
+        # display a multiple choice question
         self.clear_window()
         
         # main container
@@ -199,7 +211,7 @@ class RestaurantExpertGUI:
         # question text with match count
         question_label = tk.Label(
             top_frame,
-            text=f"Current matches: {len(self.expert.remaining)}\n{question}",
+            text=f"current matches: {len(self.expert.remaining)}\n{question}",
             font=("Helvetica", 14, "bold"),
             bg="#fff5f7",
             fg="#d4649a",
@@ -211,7 +223,7 @@ class RestaurantExpertGUI:
         # restart button on the right
         restart_btn = tk.Button(
             top_frame,
-            text="Restart",
+            text="restart",
             font=("Helvetica", 9, "bold"),
             bg="#f5a8d8",
             fg="#d4649a",
@@ -271,7 +283,7 @@ class RestaurantExpertGUI:
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
     
     def handle_answer(self, answer, question_type):
-        """Process the user's answer"""
+        # process the user's answer
         # mark this question as asked
         self.asked_questions.add(question_type)
         
@@ -289,26 +301,26 @@ class RestaurantExpertGUI:
             elif question_type == "vibe":
                 self.expert.filter_by_vibe(answer)
             elif question_type == "wifi":
-                if answer == 'Yes':
+                if answer == 'yes':
                     self.expert.filter_by_wifi('yes')
             elif question_type == "reservations":
-                if answer == 'Yes':
+                if answer == 'yes':
                     self.expert.filter_by_reservations('yes')
             elif question_type == "group_size":
                 self.expert.filter_by_group_size(self.size_map[answer])
             elif question_type == "dietary":
-                if answer == 'Any':
+                if answer == 'any':
                     self.expert.filter_by_dietary('any')
                 else:
                     self.expert.filter_by_dietary(answer)
         except Exception as e:
-            print(f"Error filtering: {e}")
-            messagebox.showerror("Error", f"Error processing answer: {str(e)}")
+            print(f"error filtering: {e}")
+            messagebox.showerror("error", f"error processing answer: {str(e)}")
             return
         
         # check if we still have results
         if len(self.expert.remaining) == 0:
-            messagebox.showwarning("No Match", "No restaurants match that selection. Starting over...")
+            messagebox.showwarning("no match", "no restaurants match that selection. starting over...")
             self.show_welcome_screen()
             return
         
@@ -316,7 +328,7 @@ class RestaurantExpertGUI:
         self.ask_next_question()
     
     def show_results(self):
-        """Show the final results"""
+        # show the final results
         self.clear_window()
         
         frame = tk.Frame(self.root, bg="#fff5f7")
@@ -325,7 +337,7 @@ class RestaurantExpertGUI:
         if len(self.expert.remaining) == 0:
             title = tk.Label(
                 frame,
-                text="Sorry!",
+                text="sorry!",
                 font=("Helvetica", 24, "bold"),
                 bg="#fff5f7",
                 fg="#f5a8d8"
@@ -334,7 +346,7 @@ class RestaurantExpertGUI:
             
             msg = tk.Label(
                 frame,
-                text="No places match your criteria.",
+                text="no places match your criteria.",
                 font=("Helvetica", 12),
                 bg="#fff5f7",
                 fg="#a87ab3"
@@ -344,7 +356,7 @@ class RestaurantExpertGUI:
         elif len(self.expert.remaining) == 1:
             title = tk.Label(
                 frame,
-                text="✨ Perfect Match!",
+                text="✨ perfect match!",
                 font=("Helvetica", 24, "bold"),
                 bg="#fff5f7",
                 fg="#f5a8d8"
@@ -367,14 +379,14 @@ class RestaurantExpertGUI:
         else:
             title = tk.Label(
                 frame,
-                text="Great Options:",
+                text="great options:",
                 font=("Helvetica", 24, "bold"),
                 bg="#fff5f7",
                 fg="#f5a8d8"
             )
             title.pack(pady=10)
             
-            # ccrollable recommendations
+            # scrollable recommendations
             canvas = tk.Canvas(frame, bg="#fff5f7", highlightthickness=0)
             scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=canvas.yview)
             scrollable_frame = tk.Frame(canvas, bg="#fff5f7")
@@ -407,7 +419,7 @@ class RestaurantExpertGUI:
         # restart button
         restart_btn = tk.Button(
             frame,
-            text="← Start Over",
+            text="← start over",
             font=("Helvetica", 11, "bold"),
             bg="#f5a8d8",
             fg="#d4649a",
