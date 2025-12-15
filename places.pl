@@ -15,7 +15,13 @@ restaurant('la_meca_shawarma', restaurant, halal, cheap, 2.2, [lunch, dinner, sn
 restaurant('rifi_restaurante', restaurant, halal, medium, 3.9, [lunch, dinner], casual, no, 6, no, [vegetarian, vegan, halal]).
 restaurant('sazon_mexica', restaurant, mexican, medium, 0.7, [lunch, dinner], casual, no, 6, no, [vegetarian, vegan]).
 restaurant('la_despensa_de_graziano', restaurant, mexican, medium, 2.0, [lunch, dinner], casual, no, 8, yes, [vegetarian, gluten_free]).
-
+restaurant('delhi_mahal', restaurant, indian, expensive, 0.6, [lunch, dinner], upscale, no, 4, yes, [halal, vegan, vegetarian]).
+restaurant('pandok', restaurant, armenian, medium, 1, [lunch, dinner], casual, no, 6, yes, [vegetarian]).
+restaurant('presencia', restaurant, french, expensive, 1.5, [dinner], upscale, yes, 4, yes, [vegetarian, gluten_free]).
+restaurant('rapanui', restaurant, argentinian, cheap, 0.3, [snack], casual, no, 4, yes, [vegetarian, gluten_free, halal]).
+restaurant('kefi', restaurant, greek, medium, 9.2, [lunch, dinner], casual, no, 4, yes, [vegetarian, gluten_free, vegan, halal]).
+restaurant('empanairo', restaurant, argentinian, cheap, 0.3, [breakfast, snack], casual, no, 3, no, [vegetarian, halal]).
+restaurant('lupita', restaurant, mexican, expensive, 3.2, [lunch, dinner], casual, no, 6, yes, [vegetarian]).
 
 % bars
 restaurant('alvear_roof_bar', bar, international, expensive, 1.7, [snack, dinner], upscale, yes, 6, yes, [vegetarian, vegan, gluten_free]).
